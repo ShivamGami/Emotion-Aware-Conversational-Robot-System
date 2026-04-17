@@ -2,7 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes_emotion import router as emotion_router
-from app.memory import MemoryStore, ConversationManager   # ✅ ADD THIS
+from app.api.context_graph import router as graph_router
+from app.api.explainability import router as explain_router
+from app.api.routes_chat import router as chat_router
+from app.memory import MemoryStore, ConversationManager
+from app.llm import ChatEngine
 
 app = FastAPI(
     title="Emotion Robot v2.0 API",
@@ -10,9 +14,7 @@ app = FastAPI(
     version="2.0.0",
 )
 
-# ✅ ADD THIS BLOCK
-memory_store = MemoryStore()
-conv_manager = ConversationManager(memory_store=memory_store)
+from app.dependencies import memory_store, conv_manager, chat_engine
 
 # Allow the React dev server to call the API
 app.add_middleware(
@@ -23,8 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
+# ── Register routers ──────────────────────────────────────────────────────────
 app.include_router(emotion_router)
+app.include_router(graph_router)
+app.include_router(explain_router)
+app.include_router(chat_router)
 
 @app.get("/health")
 def health_check():
