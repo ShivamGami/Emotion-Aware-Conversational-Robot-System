@@ -1,0 +1,58 @@
+# =========================
+# FastAPI Backend
+# =========================
+fastapi
+uvicorn
+python-multipart
+websockets
+
+# =========================
+# Data Processing / ML
+# =========================
+numpy
+pandas
+scikit-learn
+
+# =========================
+# Audio Processing (Team 2)
+# =========================
+librosa
+soundfile
+pyaudio
+
+# =========================
+# Visualization
+# =========================
+matplotlib
+pillow
+
+# =========================
+# Database & Auth (Team 2)
+# =========================
+sqlalchemy
+pydantic
+alembic
+passlib
+bcrypt
+python-jose
+
+# =========================
+# Environment Config
+# =========================
+python-dotenv
+
+# =========================
+# Future (LLM + Memory)
+# =========================
+transformers
+accelerate
+sentence-transformers
+chromadb
+langchain
+langchain-community
+
+# =========================
+# Utilities
+# =========================
+requests
+tqdm
