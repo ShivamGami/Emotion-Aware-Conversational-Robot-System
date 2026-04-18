@@ -9,3 +9,5 @@ training/
 data/
 backend/training/data/
 *.wav
+.env
+backend/.env
