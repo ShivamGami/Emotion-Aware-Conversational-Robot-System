@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { API_BASE_URL } from '../config';
 
 const EMOTION_ICONS: Record<string, string> = {
   happy: '😊', sad: '😢', angry: '😠', fearful: '😨',
@@ -28,6 +29,7 @@ interface MemoryTimelineProps {
 const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ onHighlightMemory }) => {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
+  const [emotionFilter, setEmotionFilter] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -37,7 +39,7 @@ const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ onHighlightMemory }) =>
     setIsLoading(true);
     setError(false);
     try {
-      const resp = await fetch('http://localhost:8000/api/memory/recent', {
+      const resp = await fetch(`${API_BASE_URL}/api/memory/recent`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!resp.ok) throw new Error('API error');
@@ -69,6 +71,8 @@ const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ onHighlightMemory }) =>
   const filtered = memories.filter((m) => {
     const matchSearch = m.text.toLowerCase().includes(search.toLowerCase());
     if (!matchSearch) return false;
+    // Emotion filter
+    if (emotionFilter && m.emotion !== emotionFilter) return false;
     if (filter === 'today') {
       const d = new Date(m.timestamp);
       return d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
@@ -105,7 +109,7 @@ const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ onHighlightMemory }) =>
       </div>
 
       {/* Filter buttons */}
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {(['all', 'today', 'session'] as Filter[]).map((f) => (
           <button
             key={f}
@@ -131,6 +135,38 @@ const MemoryTimeline: React.FC<MemoryTimelineProps> = ({ onHighlightMemory }) =>
         >
           ↻ Refresh
         </button>
+      </div>
+
+      {/* Emotion quick-filter chips */}
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setEmotionFilter(null)}
+          style={{
+            padding: '4px 12px', borderRadius: '16px', border: 'none', cursor: 'pointer',
+            background: emotionFilter === null ? 'rgba(0,212,255,0.2)' : 'rgba(255,255,255,0.06)',
+            color: emotionFilter === null ? '#00d4ff' : 'rgba(255,255,255,0.5)',
+            fontSize: '0.75rem', fontWeight: 500,
+          }}
+        >All Emotions</button>
+        {Object.entries(EMOTION_ICONS).map(([emo, icon]) => (
+          <button
+            key={emo}
+            onClick={() => setEmotionFilter(emo === emotionFilter ? null : emo)}
+            style={{
+              padding: '4px 10px', borderRadius: '16px', border: 'none', cursor: 'pointer',
+              background: emotionFilter === emo ? `${EMOTION_COLORS[emo] || '#00d4ff'}25` : 'rgba(255,255,255,0.06)',
+              color: emotionFilter === emo ? (EMOTION_COLORS[emo] || '#00d4ff') : 'rgba(255,255,255,0.4)',
+              fontSize: '0.8rem',
+              transition: 'all 0.2s ease',
+            }}
+          >{icon}</button>
+        ))}
+      </div>
+
+      {/* Summary count */}
+      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', display: 'flex', justifyContent: 'space-between' }}>
+        <span>📝 {filtered.length} {filtered.length === 1 ? 'memory' : 'memories'} found</span>
+        <span>Total stored: {memories.length}</span>
       </div>
 
       {/* Timeline */}

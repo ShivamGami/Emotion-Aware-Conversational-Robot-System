@@ -101,6 +101,7 @@ class VoiceEmotionDetector:
             pass
 
         # Strategy 2: Try librosa with audioread (handles webm, mp4, opus via ffmpeg)
+        # Note: This usually requires FFprobre/FFmpeg to be installed on the system PATH.
         try:
             data, sr = librosa.load(io.BytesIO(audio_bytes), sr=None, mono=True)
             return data, sr
@@ -123,7 +124,13 @@ class VoiceEmotionDetector:
                 except:
                     pass
         except Exception as e:
-            raise ValueError(f"Could not decode audio in any format: {e}")
+            msg = (
+                "Could not decode audio in any format. This usually means FFmpeg is not installed "
+                "or not in the system PATH. WebM/Opus requires FFmpeg. "
+                "FIX: Run 'winget install ffmpeg' and restart the server."
+            )
+            print(f"[CRITICAL] {msg} Error: {e}")
+            raise ValueError(msg)
 
     def _extract_mfcc_features(self, audio_bytes: bytes) -> np.ndarray:
         """

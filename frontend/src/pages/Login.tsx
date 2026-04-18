@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import '../styles/Auth.css';
 
 const Login: React.FC = () => {
@@ -21,7 +22,7 @@ const Login: React.FC = () => {
     setError(null);
     try {
       // Step 1 — Authenticate and get JWT
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -38,7 +39,7 @@ const Login: React.FC = () => {
 
       // Step 2 — Fetch real user profile to get email, avatar etc.
       try {
-        const profileResp = await fetch(`http://localhost:8000/api/auth/profile?token=${token}`);
+        const profileResp = await fetch(`${API_BASE_URL}/api/auth/profile?token=${token}`);
         if (profileResp.ok) {
           const profile = await profileResp.json();
           setUser({ username: profile.username, email: profile.email, avatar: profile.avatar, id: profile.id });

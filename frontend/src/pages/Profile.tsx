@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { LogOut, Edit2, Save, X } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const EMOTION_ICONS: Record<string, string> = {
   happy: '😊', sad: '😢', angry: '😠', fearful: '😨',
@@ -25,7 +26,7 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     if (!token) return;
-    fetch('http://localhost:8000/api/user/stats', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE_URL}/api/user/stats`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
         setStats(data);
@@ -37,7 +38,7 @@ const Profile: React.FC = () => {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await fetch('http://localhost:8000/api/auth/profile', {
+      await fetch(`${API_BASE_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: editEmail || undefined, avatar: selectedAvatar }),

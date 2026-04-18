@@ -1,5 +1,6 @@
-import React, { useRef, useCallback, useEffect, useState } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
+import { API_BASE_URL } from '../config';
 
 const EMOTION_COLORS: Record<string, string> = {
   happy: '#ffd700',
@@ -23,11 +24,12 @@ interface EmotionCameraProps {
 
 const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
   const webcamRef = useRef<Webcam>(null);
-  const [currentEmotion, setCurrentEmotion] = useState('detecting...');
+  const [currentEmotion, setCurrentEmotion] = useState('warming up...');
   const [confidence, setConfidence] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [noFace, setNoFace] = useState(false);
   const [frameCount, setFrameCount] = useState(0);
+  const [isWarming, setIsWarming] = useState(true);
 
   // ── In-flight guard: prevents stacked requests when backend is slow ──────
   const isFetchingRef = useRef(false);
@@ -42,7 +44,7 @@ const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
     isFetchingRef.current = true;
 
     try {
-      const response = await fetch('http://localhost:8000/api/detect/face', {
+      const response = await fetch(`${API_BASE_URL}/api/detect/face`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: imageSrc }),
@@ -51,17 +53,20 @@ const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
       if (response.ok) {
         const data = await response.json();
         setIsConnected(true);
-        setFrameCount((f) => f + 1);
+        setFrameCount((f: number) => f + 1);
+
+        // Once we get any valid response, we are no longer warming up
+        setIsWarming(false);
 
         // If no face detected, show a distinct "no face" state
-        // Don't propagate to parent — avoid polluting analytics with noise
-        if (data.no_face_detected || data.confidence < 0.25) {
+        if (data.no_face_detected || data.confidence < 0.05) {
           setNoFace(true);
           setCurrentEmotion('no face');
           setConfidence(0);
           // Don't call onEmotionChange — the last known emotion persists in parent
         } else {
           setNoFace(false);
+          setIsWarming(false);
           setCurrentEmotion(data.dominant_emotion);
           setConfidence(Math.round(data.confidence * 100));
           if (onEmotionChange) onEmotionChange(data.dominant_emotion, data.confidence);
@@ -77,7 +82,7 @@ const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
       const mock = emotions[frameCount % emotions.length];
       setCurrentEmotion(mock);
       setConfidence(70 + frameCount % 25);
-      setFrameCount((f) => f + 1);
+      setFrameCount((f: number) => f + 1);
       if (onEmotionChange) onEmotionChange(mock, 0.75);
     } finally {
       // Always release the guard when done
@@ -85,18 +90,17 @@ const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
     }
   }, [webcamRef, onEmotionChange, frameCount]);
 
-  // Capture every 1000ms (slowed from 500ms for stability, still real-time)
-  // The in-flight guard ensures no duplicates even if backend is slow
+  // Capture every 800ms (balanced for MTCNN accuracy + speed)
   useEffect(() => {
-    const interval = setInterval(capture, 1000);
+    const interval = setInterval(capture, 800);
     return () => clearInterval(interval);
   }, [capture]);
 
-  const color = noFace
+  const color = noFace || isWarming
     ? 'rgba(255,255,255,0.3)'
     : (EMOTION_COLORS[currentEmotion] || '#00d4ff');
-  const icon = noFace ? '👤' : (EMOTION_ICONS[currentEmotion] || '🤖');
-  const label = noFace ? 'NO FACE' : currentEmotion.toUpperCase();
+  const icon = isWarming ? '⏳' : noFace ? '👤' : (EMOTION_ICONS[currentEmotion] || '🤖');
+  const label = isWarming ? 'WARMING UP' : noFace ? 'NO FACE' : currentEmotion.toUpperCase();
 
   return (
     <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', height: '240px', border: `2px solid ${color}40` }}>
@@ -108,7 +112,7 @@ const EmotionCamera: React.FC<EmotionCameraProps> = ({ onEmotionChange }) => {
         width="100%"
         height="100%"
         style={{ objectFit: 'cover', display: 'block' }}
-        videoConstraints={{ facingMode: 'user', width: 320, height: 240 }}
+        videoConstraints={{ facingMode: 'user', width: 640, height: 480 }}
       />
 
       {/* Emotion glow border animation */}

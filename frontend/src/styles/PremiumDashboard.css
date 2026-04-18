@@ -302,15 +302,51 @@
   pointer-events: auto;
 }
 
-.floating-panel.top-left { top: 24px; left: 24px; width: 280px; }
-.floating-panel.top-right { top: 24px; right: 24px; width: 260px; }
+.floating-panel.top-left { top: 76px; left: 24px; width: 300px; }
+.floating-panel.top-right { top: 76px; right: 24px; width: 340px; }
+
+/* ── Glass Window (Vision / Chat) ── */
+.glass-window {
+  background: rgba(5, 10, 25, 0.65);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 230, 255, 0.15);
+  border-top: 1px solid rgba(0, 230, 255, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.5);
+}
+
+.window-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255,255,255,0.3);
+}
+
+.window-close:hover { background: rgba(255,68,68,0.2); color: #ff4444; }
 
 .webcam-mini {
-  padding: 8px;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  padding: 12px;
 }
 
 .status-mini {
@@ -360,24 +396,52 @@
 
 .studio-greeting {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
+  bottom: 30px;
+  left: 30px;
   z-index: 5;
   pointer-events: none;
 }
 
 .studio-title {
   margin: 0;
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 800;
   color: white;
+  text-shadow: 0 0 20px rgba(255,255,255,0.2);
 }
 
 .studio-sub {
   margin: 4px 0 0;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.4);
   font-size: 0.8rem;
 }
+
+.bottom-right-stats {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  z-index: 5;
+  display: flex;
+  background: rgba(5,10,25,0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,230,255,0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.stat-part {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-part.bot { background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.05); }
+.stat-part.face { border-right: 1px solid rgba(255,255,255,0.05); }
+.stat-part span { color: rgba(255,255,255,0.4); margin-left: 4px; }
 
 /* ── Animations ── */
 .animate-slide-in-left { animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -402,71 +466,61 @@
 }
 /* ── Immersive Interaction Styles ── */
 .floating-panel.bottom-center {
-  bottom: 40px;
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  height: 250px;
+  width: 400px;
+}
+
+.mic-rings-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mic-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 4px solid var(--accent);
+  box-shadow: 0 0 20px var(--accent);
+  opacity: 0;
+  bottom: 20px; 
 }
 
 .mic-trigger-btn {
-  width: 80px;
-  height: 80px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
+  background: var(--bg);
   color: white;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   position: relative;
+  z-index: 5;
+  box-shadow: 0 0 15px rgba(0,0,0,0.8);
+  margin-bottom: 40px;
 }
 
-.mic-trigger-btn:hover:not(:disabled) {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.15);
-  border-color: var(--accent);
-}
+.mic-trigger-btn:hover { background: rgba(255,255,255,0.05); }
 
-.mic-trigger-btn.listening {
-  background: rgba(255, 0, 150, 0.2);
-  border-color: var(--accent2);
-  animation: pulseMic 1.5s infinite;
-}
-
-.mic-trigger-btn.speaking {
-  background: rgba(0, 212, 255, 0.2);
-  border-color: var(--accent);
-  cursor: wait;
-}
-
-.mic-trigger-btn .btn-label {
+.click-to-speak-label {
   position: absolute;
-  top: 90px;
-  white-space: nowrap;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
-  transition: color 0.3s ease;
-}
-
-.mic-trigger-btn.listening .btn-label { color: var(--accent2); }
-.mic-trigger-btn.speaking .btn-label { color: var(--accent); }
-
-@keyframes pulseMic {
-  0% { box-shadow: 0 0 0 0 rgba(255, 0, 150, 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(255, 0, 150, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 0, 150, 0); }
+  bottom: 15px;
+  font-size: 0.70rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
 }
 
 .subtitle-overlay {

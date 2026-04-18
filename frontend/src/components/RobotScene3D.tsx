@@ -14,7 +14,7 @@ import React, { useEffect, useState, useRef } from 'react';
  *   4. The container is already styled — do NOT change the outer wrapper
  *
  * API endpoint available:
- *   GET http://localhost:8000/api/ros/current_emotion
+ *   GET /api/ros/current_emotion
  *   → { emotion: "happy", behavior: { animation: "dance", speed: 1.2, color: "#ffd700" } }
  */
 
@@ -76,160 +76,116 @@ const RobotScene3D: React.FC<RobotScene3DProps> = ({ emotion }) => {
       style={{
         width: '100%', height: '100%', minHeight: '380px',
         position: 'relative', overflow: 'hidden', borderRadius: '16px',
-        background: `#060a14`,
-        transition: 'all 0.8s ease',
+        background: `#02040a`,
+        transition: 'background 0.8s ease',
+        perspective: '1000px',
       }}
     >
-      {/* Dynamic emotion background glow */}
+      {/* 3D Grid Floor */}
       <div style={{
-        position: 'absolute', inset: 0,
-        background: bg,
-        transition: 'background 1s ease',
-        pointerEvents: 'none',
+        position: 'absolute',
+        bottom: '-20%', left: '-50%', right: '-50%', height: '80%',
+        backgroundSize: '40px 40px',
+        backgroundImage: 'linear-gradient(to right, rgba(0, 212, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 212, 255, 0.1) 1px, transparent 1px)',
+        transform: 'rotateX(75deg)',
+        transformOrigin: 'top',
+        maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 80%, transparent)',
       }} />
 
-      {/* ─────────────────────────────────────────────
-          MEMBER 4: Replace everything inside this div
-          with your React Three Fiber <Canvas> component.
-          Keep the outer wrapper intact.
-          ───────────────────────────────────────────── */}
+      {/* Central Base Rings (Simulating 3D floor rings) */}
       <div style={{
-        position: 'absolute', inset: 0,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        gap: '16px',
+        position: 'absolute',
+        bottom: '25%', left: '50%',
+        transform: 'translate(-50%, 50%) rotateX(75deg)',
+        width: '400px', height: '400px',
+        borderRadius: '50%',
+        border: '10px solid rgba(0, 212, 255, 0.6)',
+        boxShadow: '0 0 40px rgba(0, 212, 255, 0.4), inset 0 0 20px rgba(0, 212, 255, 0.2)',
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '25%', left: '50%',
+        transform: 'translate(-50%, 50%) rotateX(75deg)',
+        width: '200px', height: '200px',
+        borderRadius: '50%',
+        border: '4px solid rgba(0, 212, 255, 0.4)',
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '25%', left: '50%',
+        transform: 'translate(-50%, 50%) rotateX(75deg)',
+        width: '80px', height: '80px',
+        borderRadius: '50%',
+        border: '6px solid rgba(0, 212, 255, 0.8)',
+        boxShadow: '0 0 20px rgba(0, 212, 255, 0.6)',
+      }} />
+
+      {/* Vertical Avatar Building Blocks (The "Blob" Robot) */}
+      <div style={{
+        position: 'absolute',
+        bottom: '15%', left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        gap: '10px', zIndex: 5,
+        filter: 'drop-shadow(0 0 10px rgba(0, 212, 255, 0.8))',
       }}>
+         {/* Head Area */}
+         <div style={{ width: '6px', height: '20px', background: 'var(--accent)', borderRadius: '4px' }} />
+         <div style={{ width: '40px', height: '14px', background: 'var(--accent)', borderRadius: '8px', marginBottom: '8px' }} />
 
-        {/* Animated SVG Robot placeholder */}
-        <svg width="120" height="160" viewBox="0 0 120 160" fill="none">
-          {/* Head */}
-          <rect x="30" y="20" width="60" height="50" rx="12"
-            fill={`${color}22`} stroke={color} strokeWidth="2"
-            style={{ filter: `drop-shadow(0 0 8px ${color})` }} />
-          {/* Eyes */}
-          <circle cx="45" cy="40" r="8" fill={color} opacity="0.9"
-            style={{ animation: 'pulse 1.5s ease-in-out infinite' }} />
-          <circle cx="75" cy="40" r="8" fill={color} opacity="0.9"
-            style={{ animation: 'pulse 1.5s ease-in-out infinite 0.3s' }} />
-          {/* Mouth — changes by emotion */}
-          {emotion === 'happy' && (
-            <path d="M 42 55 Q 60 68 78 55" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" />
-          )}
-          {emotion === 'sad' && (
-            <path d="M 42 62 Q 60 52 78 62" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" />
-          )}
-          {(emotion === 'neutral' || emotion === 'calm') && (
-            <line x1="45" y1="58" x2="75" y2="58" stroke={color} strokeWidth="3" strokeLinecap="round" />
-          )}
-          {emotion === 'angry' && (
-            <path d="M 42 62 Q 60 52 78 62" stroke="#ff4444" strokeWidth="3" fill="none" strokeLinecap="round" />
-          )}
-          {emotion === 'surprised' && (
-            <ellipse cx="60" cy="58" rx="8" ry="6" stroke={color} strokeWidth="2" fill="none" />
-          )}
-          {/* Antenna */}
-          <line x1="60" y1="20" x2="60" y2="8" stroke={color} strokeWidth="2" />
-          <circle cx="60" cy="6" r="4" fill={color}
-            style={{ animation: 'pulse 1s ease-in-out infinite' }} />
-          {/* Body */}
-          <rect x="20" y="75" width="80" height="55" rx="10"
-            fill={`${color}15`} stroke={color} strokeWidth="1.5" />
-          {/* Chest panel */}
-          <rect x="35" y="85" width="50" height="30" rx="6"
-            fill={`${color}30`} stroke={`${color}80`} strokeWidth="1" />
-          <circle cx="60" cy="100" r="8" fill={`${color}60`} stroke={color} strokeWidth="1.5"
-            style={{ filter: `drop-shadow(0 0 6px ${color})` }} />
-          {/* Arms */}
-          <rect x="2" y="78" width="15" height="40" rx="7"
-            fill={`${color}20`} stroke={color} strokeWidth="1.5" />
-          <rect x="103" y="78" width="15" height="40" rx="7"
-            fill={`${color}20`} stroke={color} strokeWidth="1.5" />
-          {/* Legs */}
-          <rect x="30" y="132" width="22" height="24" rx="8"
-            fill={`${color}20`} stroke={color} strokeWidth="1.5" />
-          <rect x="68" y="132" width="22" height="24" rx="8"
-            fill={`${color}20`} stroke={color} strokeWidth="1.5" />
-        </svg>
-
-        {/* Animation label */}
-        <div style={{
-          color, fontSize: '0.9rem', fontWeight: 600,
-          background: `${color}15`, padding: '6px 16px',
-          borderRadius: '20px', border: `1px solid ${color}40`,
-          letterSpacing: '0.5px',
-        }}>
-          {animation}
-        </div>
-
-        {/* M4 integration message */}
-        <div style={{
-          color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem',
-          textAlign: 'center', maxWidth: '200px',
-          lineHeight: 1.5,
-        }}>
-          M4 drops React Three Fiber Canvas here
-        </div>
+         {/* Spine / Body blobs */}
+         <div style={{ width: '24px', height: '30px', background: 'var(--accent)', borderRadius: '50%' }} />
+         <div style={{ width: '20px', height: '20px', background: 'var(--accent)', borderRadius: '50%' }} />
+         <div style={{ width: '16px', height: '16px', background: 'var(--accent)', borderRadius: '50%' }} />
+         <div style={{ width: '20px', height: '20px', background: 'var(--accent)', borderRadius: '50%' }} />
+         <div style={{ width: '24px', height: '10px', background: 'var(--accent)', borderRadius: '4px' }} />
       </div>
 
-      {/* Orbiting memory orbs */}
-      {[
-        { x: orbitX, y: orbitY, label: '☕ Coffee' },
-        { x: orbit2X, y: orbit2Y, label: '💼 Work' },
-        { x: orbit3X, y: orbit3Y, label: '🌙 Calm' },
-      ].map((orb, i) => (
-        <div key={i} style={{
-          position: 'absolute',
-          left: `${orb.x}%`, top: `${orb.y}%`,
-          transform: 'translate(-50%, -50%)',
-          background: `${color}25`, border: `1px solid ${color}60`,
-          borderRadius: '50%', width: '48px', height: '48px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.6rem', color: 'white', textAlign: 'center',
-          backdropFilter: 'blur(4px)',
-          boxShadow: `0 0 12px ${color}40`,
-          cursor: 'pointer',
-          transition: 'box-shadow 0.3s ease',
-          lineHeight: 1.2,
-        }}>
-          {orb.label}
-        </div>
+      {/* Floating Shapes */}
+      {/* Heavy Hexagon */}
+      <div style={{
+        position: 'absolute', left: '30%', top: '40%',
+        width: '60px', height: '65px',
+        background: 'rgba(0, 150, 200, 0.8)',
+        clipPath: 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)',
+        boxShadow: '0 0 20px rgba(0,212,255,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        animation: 'float 6s ease-in-out infinite',
+      }}>
+        <div style={{ width: '12px', height: '12px', background: 'white', borderRadius: '50%', boxShadow: '0 0 10px white' }} />
+      </div>
+
+      {/* Particles around */}
+      <div style={{ position: 'absolute', left: '46%', top: '50%', width:'12px', height:'12px', background: '#ffcc00', borderRadius:'50%', boxShadow:'0 0 10px #ffcc00', animation: 'float 4s infinite alternate' }} />
+      <div style={{ position: 'absolute', left: '16%', top: '56%', width:'24px', height:'24px', background: '#e63946', borderRadius:'50%', boxShadow:'0 0 15px #e63946', animation: 'float 5s infinite alternate' }} />
+      <div style={{ position: 'absolute', right: '24%', top: '42%', width:'16px', height:'16px', background: '#9d4edd', borderRadius:'50%', boxShadow:'0 0 15px #9d4edd', animation: 'float 7s infinite alternate' }} />
+      <div style={{ position: 'absolute', right: '15%', top: '25%', width:'8px', height:'8px', background: 'rgba(0,212,255,0.6)', borderRadius:'50%', animation: 'float 3s infinite alternate' }} />
+      <div style={{ position: 'absolute', left: '32%', top: '22%', width:'6px', height:'6px', background: 'rgba(0,212,255,0.8)', borderRadius:'50%', animation: 'float 5s infinite alternate' }} />
+
+      {/* Tiny floating stars/dots */}
+      {[...Array(15)].map((_, i) => (
+         <div key={i} style={{ 
+            position: 'absolute', 
+            left: `${Math.random() * 90}%`, 
+            top: `${Math.random() * 80}%`, 
+            width: `${Math.random() * 3 + 1}px`, 
+            height: `${Math.random() * 3 + 1}px`, 
+            background: 'rgba(0,212,255,0.5)', 
+            borderRadius: '50%',
+            animation: `pulse ${Math.random() * 2 + 1}s infinite alternate`
+         }} />
       ))}
 
-      {/* Bottom emotion info bar */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
-        padding: '10px 20px',
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderTop: `1px solid ${color}30`,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '8px', height: '8px', borderRadius: '50%',
-            background: color, boxShadow: `0 0 8px ${color}`,
-          }} />
-          <span style={{ color, fontSize: '0.8rem', fontWeight: 600 }}>
-            {emotion.toUpperCase()}
-          </span>
-        </div>
-        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
-          3D World Container — M4
-        </span>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          {['robot', 'env', 'ctx'].map((t) => (
-            <div key={t} style={{
-              padding: '2px 8px', borderRadius: '4px',
-              background: 'rgba(255,255,255,0.05)',
-              color: 'rgba(255,255,255,0.3)', fontSize: '0.65rem',
-            }}>{t}</div>
-          ))}
-        </div>
-      </div>
 
       <style>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.6; transform: scale(0.9); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
         }
       `}</style>
     </div>

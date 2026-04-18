@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Mic, MicOff, Volume2, Loader2, Smile } from 'lucide-react';
+import { Send, Mic, MicOff, Volume2, Loader2 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { API_BASE_URL } from '../config';
 import '../styles/Chat.css';
 
 interface Message {
@@ -22,7 +23,7 @@ interface ChatPanelProps {
   mode?: 'standard' | 'immersive';
 }
 
-const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessionId, mode = 'standard' }) => {
+const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessionId: _sessionId, mode = 'standard' }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
@@ -68,7 +69,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessi
   const speak = useCallback(async (text: string, emotion: string) => {
     try {
       window.speechSynthesis.cancel();
-      const resp = await fetch('http://localhost:8000/api/tts', {
+      const resp = await fetch(`${API_BASE_URL}/api/tts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, emotion }),
@@ -106,7 +107,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessi
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessi
 
   // ── Push emotion to Member 4 ROS endpoint ──
   const pushEmotionToRobot = (emotion: string) => {
-    fetch(`http://localhost:8000/api/ros/send_emotion?fused_emotion=${emotion}`, {
+    fetch(`${API_BASE_URL}/api/ros/send_emotion?fused_emotion=${emotion}`, {
       method: 'POST',
     }).catch(() => {}); // silent — M4 integration, non-blocking
   };
@@ -188,41 +189,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({ currentEmotion = 'neutral', sessi
     sendMessage(inputValue);
   };
 
-  // ── IMMERSIVE RENDER (Studio Layout) ──
-  if (mode === 'immersive') {
-    return (
-      <div className="immersive-chat-overlay">
-        {latestMessage && (
-          <div className="subtitle-container animate-fade-in-out">
-            <span className={`speaker-label ${latestMessage.sender}`}>
-              {latestMessage.sender === 'user' ? 'YOU' : 'EMOBOT'}
-            </span>
-            <p className="subtitle-text">"{latestMessage.text}"</p>
-          </div>
-        )}
-
-        <div className="immersive-controls">
-          <button 
-            className={`immersive-mic-pill ${isListening ? 'listening' : ''}`}
-            onClick={toggleListening}
-          >
-            <div className="mic-icon-wrapper">
-              {isListening ? <MicOff size={20} /> : <Mic size={20} />}
-            </div>
-            <span>{isListening ? 'Listening...' : 'Hold Spacebar to Speak'}</span>
-          </button>
-          
-          {isSpeaking && (
-            <div className="immersive-sound-wave">
-              <span/><span/><span/><span/><span/>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── STANDARD RENDER (Sidebar Layout) ──
+  // ── RENDER (Conversation Panel) ──
   return (
     <div className="chat-panel-wrapper">
       <div className="chat-messages" id="chat-messages-container">

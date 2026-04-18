@@ -13,6 +13,12 @@ Architecture summary:
   Block 3: Conv(128)→ BN → ReLU → Conv(128)→ BN → ReLU → MaxPool → Dropout(0.25)
   FC     : Flatten → Dense(1024) → BN → ReLU → Dropout(0.5) → Dense(7)
   Output : 7-class softmax (applied at inference time only)
+
+Emotion label order (must match training):
+  0=angry  1=disgust  2=fear  3=happy  4=sad  5=surprise  6=neutral
+
+NOTE: Labels use "fear" and "surprise" (not "fearful"/"surprised").
+      The fusion module (emotion_fusion.py) must use the same keys.
 """
 
 import torch
@@ -55,9 +61,13 @@ class FERCustomCNN(nn.Module):
     model = FERCustomCNN()
     model.load_state_dict(torch.load("fer_cnn.pth", map_location="cpu"))
     model.eval()
+
+    probs = model.predict_proba(tensor)   # tensor shape: (B, 1, 48, 48)
     """
 
-    # Canonical label order used during FER-2013 training
+    # Canonical label order used during FER-2013 training.
+    # Keys intentionally kept as "fear" / "surprise" (not "fearful"/"surprised")
+    # to stay consistent with the FER library and the fusion module.
     EMOTIONS = ["angry", "disgust", "fear", "happy", "sad", "surprise", "neutral"]
 
     def __init__(self, num_classes: int = 7, dropout_fc: float = 0.5) -> None:

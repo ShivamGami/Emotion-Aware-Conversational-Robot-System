@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { API_BASE_URL } from '../config';
 
-const EMOTIONS = ['happy', 'neutral', 'sad', 'angry', 'fearful', 'surprised', 'calm'];
+const EMOTIONS = ['happy', 'neutral', 'sad', 'angry', 'fearful', 'surprised', 'calm', 'disgust'];
 const EMOTION_ICONS: Record<string, string> = {
   happy: '😊', sad: '😢', angry: '😠', fearful: '😨',
   surprised: '😲', disgust: '🤢', calm: '😌', neutral: '🤖',
@@ -46,6 +47,21 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     return () => clearInterval(interval);
   }, [currentEmotion, faceConfidence]);
 
+  // ── Session timer ─────────────────────────────────────────────────────────
+  const [sessionSeconds, setSessionSeconds] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSessionSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const sessionTime = `${Math.floor(sessionSeconds / 60).toString().padStart(2, '0')}:${(sessionSeconds % 60).toString().padStart(2, '0')}`;
+
+  // ── Emotion distribution (percentage of time per emotion) ──────────────────
+  const emotionCounts = history.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.emotion] = (acc[entry.emotion] || 0) + 1;
+    return acc;
+  }, {});
+  const totalEntries = Math.max(history.length, 1);
+
   // ── Multimodal Fusion — fixed URL: /api/fuse (not /api/fuse_emotions) ──────
   // Also fixed request body keys to match FusionRequest schema
   useEffect(() => {
@@ -56,7 +72,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     if (fuseKey === lastFuseRef.current) return;
     lastFuseRef.current = fuseKey;
 
-    fetch('http://localhost:8000/api/fuse', {
+    fetch(`${API_BASE_URL}/api/fuse`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -75,7 +91,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   useEffect(() => {
     if (!token) return;
     setStatsLoading(true);
-    fetch('http://localhost:8000/api/user/stats', {
+    fetch(`${API_BASE_URL}/api/user/stats`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -313,6 +329,33 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           )}
         </div>
       )}
+
+      {/* ── Row 5: Session Emotion Distribution ── */}
+      <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '14px', padding: '14px', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>SESSION EMOTION BREAKDOWN</span>
+          <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>⏱ {sessionTime}</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {EMOTIONS.filter(e => emotionCounts[e]).sort((a, b) => (emotionCounts[b] || 0) - (emotionCounts[a] || 0)).map(e => {
+            const pct = Math.round((emotionCounts[e] / totalEntries) * 100);
+            const c = EMOTION_COLORS[e] || '#00d4ff';
+            return (
+              <div key={e} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ width: '24px', fontSize: '1rem', textAlign: 'center' }}>{EMOTION_ICONS[e]}</span>
+                <span style={{ width: '65px', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', textTransform: 'capitalize' }}>{e}</span>
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: '4px', height: '10px' }}>
+                  <div style={{ width: `${pct}%`, height: '10px', background: `linear-gradient(90deg, ${c}, ${c}90)`, borderRadius: '4px', transition: 'width 0.8s ease', minWidth: '4px' }} />
+                </div>
+                <span style={{ width: '35px', fontSize: '0.75rem', color: c, textAlign: 'right', fontWeight: 600 }}>{pct}%</span>
+              </div>
+            );
+          })}
+          {history.length === 0 && (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', textAlign: 'center', padding: '10px' }}>Waiting for data...</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

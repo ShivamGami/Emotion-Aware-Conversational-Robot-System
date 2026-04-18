@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
+
 import { motion } from 'framer-motion';
-import { UserPlus, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import '../styles/Auth.css';
 
 const Signup: React.FC = () => {
@@ -19,7 +20,7 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:8000/api/auth/signup', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),

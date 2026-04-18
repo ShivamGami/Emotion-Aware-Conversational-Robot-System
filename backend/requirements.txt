@@ -21,10 +21,12 @@ tqdm
 chromadb
 sentence-transformers
 deepface
+fer>=22.5.1
 mediapipe
 opencv-python
 # Other dependencies
 python-dotenv
 openai
+google-genai
 langchain
 langchain-community
