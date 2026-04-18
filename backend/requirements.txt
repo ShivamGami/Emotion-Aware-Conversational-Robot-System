@@ -1,0 +1,30 @@
+# Core ML and AI
+fastapi
+uvicorn[standard]
+python-multipart
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic
+torch
+torchaudio
+torchvision
+librosa
+soundfile
+numpy
+scikit-learn
+matplotlib
+requests
+tqdm
+
+# Member 1 specialized
+chromadb
+sentence-transformers
+deepface
+mediapipe
+opencv-python
+# Other dependencies
+python-dotenv
+openai
+langchain
+langchain-community
