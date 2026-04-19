@@ -29,6 +29,7 @@ from api.context_graph import router as context_router
 from api.explainability import router as explain_router
 from api.m2_tasks import router as m2_router
 from api.routes_bridge import router as bridge_router
+from api.routes_convai import router as convai_router
 
 # ─────────────────────────────────────────────
 # Setup and Configuration
@@ -69,6 +70,7 @@ app.include_router(context_router)
 app.include_router(explain_router)
 app.include_router(m2_router)
 app.include_router(bridge_router)
+app.include_router(convai_router, prefix="/api/convai", tags=["ConvAI"])
 
 # Alias for Analytics Dashboard compatibility — properly use router instead of calling DI function directly
 @app.get("/api/user/stats")

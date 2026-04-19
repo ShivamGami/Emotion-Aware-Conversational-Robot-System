@@ -67,6 +67,8 @@ class FusionRequest(BaseModel):
 
 class FusionResponse(BaseModel):
     fused_emotion: str
+    face_weight: float
+    voice_weight: float
     ros_behavior: dict
 
 

@@ -39,6 +39,11 @@ EMOTION_ROS_BEHAVIORS = {
     "neutral":  {"animation": "idle_breath",  "speed": 1.0, "color": "#ffffff"},
 }
 
+# --- FUSION CONFIGURATION ---
+# To achieve the requested 70:30 ratio in favor of Face, we apply a 2.333x multiplier 
+# to the face confidence score during the weighting calculation.
+FACE_WEIGHT_MULTIPLIER = 2.333 
+
 
 def _normalize_confidence(conf) -> float:
     """Clamp any confidence value to [0.0, 1.0]. Treats None as 0.5 (unknown)."""
@@ -78,11 +83,14 @@ def fuse_emotions(
     face_conf  = _normalize_confidence(face_confidence)
     voice_conf = _normalize_confidence(voice_confidence)
 
-    total = face_conf + voice_conf
+    # Apply heavier weight to Vision (75:25 bias)
+    weighted_face_conf = face_conf * FACE_WEIGHT_MULTIPLIER
+
+    total = weighted_face_conf + voice_conf
     if total == 0.0:
         total = 1.0  # avoid division by zero; weights become 0.5 / 0.5
 
-    face_weight  = face_conf  / total
+    face_weight  = weighted_face_conf / total
     voice_weight = voice_conf / total
 
     # If both agree, trivially pick either; otherwise the higher-weight source wins
